@@ -17,7 +17,7 @@ public class RobotsProgram
         e.printStackTrace();
       }
       SwingUtilities.invokeLater(() -> {
-        MainApplicationFrame frame = new MainApplicationFrame();
+        MainApplicationFrame frame = new MainApplicationFrame(); //точка входа, тут создается объект который запускает все события
         frame.pack();
         frame.setVisible(true);
         frame.setExtendedState(Frame.MAXIMIZED_BOTH);
