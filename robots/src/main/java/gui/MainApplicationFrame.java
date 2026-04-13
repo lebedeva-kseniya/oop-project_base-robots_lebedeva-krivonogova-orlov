@@ -2,155 +2,171 @@ package gui;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.awt.event.KeyEvent;
-
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 
 import log.Logger;
 
-/**
- * Что требуется сделать:
- * 1. Метод создания меню перегружен функционалом и трудно читается. 
- * Следует разделить его на серию более простых методов (или вообще выделить отдельный класс).
- *
- */
-public class MainApplicationFrame extends JFrame
-{
+public class MainApplicationFrame extends JFrame {
     private final JDesktopPane desktopPane = new JDesktopPane();
-    
+    private final WindowConfig config;
+    private final WindowStateManager stateManager;
+    private final MenuBarBuilder menuBarBuilder;
+
     public MainApplicationFrame() {
-        //Make the big window be indented 50 pixels from each edge
-        //of the screen.
-        int inset = 50;        
+        this.config = new WindowConfig();
+        this.stateManager = new WindowStateManager(config);
+        this.menuBarBuilder = new MenuBarBuilder(this);
+
+        initializeFrame();
+        setupContent();
+        addDefaultWindows();
+        setupMenuBar();
+
+        restoreWindowConfiguration();
+        setupWindowFocusBehavior();
+        setupCloseHandler();
+    }
+
+    private void initializeFrame() {
+        int inset = 50;
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setBounds(inset, inset,
-            screenSize.width  - inset*2,
-            screenSize.height - inset*2);
+                screenSize.width - inset * 2,
+                screenSize.height - inset * 2);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+    }
 
+    private void setupContent() {
         setContentPane(desktopPane);
-        
-        
+    }
+
+    private void addDefaultWindows() {
         LogWindow logWindow = createLogWindow();
+        logWindow.setName("LogWindow");
         addWindow(logWindow);
 
-        GameWindow gameWindow = new GameWindow();
-        gameWindow.setSize(400,  400);
+        GameWindow gameWindow = createGameWindow();
+        gameWindow.setName("GameWindow");
         addWindow(gameWindow);
 
-        setJMenuBar(generateMenuBar());
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        desktopPane.moveToFront(gameWindow);
+        desktopPane.moveToBack(logWindow);
     }
-    
-    protected LogWindow createLogWindow()
-    {
+
+    private void setupMenuBar() {
+        setJMenuBar(menuBarBuilder.createMenuBar());
+    }
+
+    protected LogWindow createLogWindow() {
         LogWindow logWindow = new LogWindow(Logger.getDefaultLogSource());
-        logWindow.setLocation(10,10);
+        logWindow.setLocation(10, 10);
         logWindow.setSize(300, 800);
         setMinimumSize(logWindow.getSize());
         logWindow.pack();
         Logger.debug("Протокол работает");
         return logWindow;
     }
-    
-    protected void addWindow(JInternalFrame frame)
-    {
+
+    protected GameWindow createGameWindow() {
+        GameWindow gameWindow = new GameWindow();
+        gameWindow.setSize(400, 400);
+        return gameWindow;
+    }
+
+    protected void addWindow(JInternalFrame frame) {
         desktopPane.add(frame);
         frame.setVisible(true);
     }
-    
-//    protected JMenuBar createMenuBar() {
-//        JMenuBar menuBar = new JMenuBar();
-// 
-//        //Set up the lone menu.
-//        JMenu menu = new JMenu("Document");
-//        menu.setMnemonic(KeyEvent.VK_D);
-//        menuBar.add(menu);
-// 
-//        //Set up the first menu item.
-//        JMenuItem menuItem = new JMenuItem("New");
-//        menuItem.setMnemonic(KeyEvent.VK_N);
-//        menuItem.setAccelerator(KeyStroke.getKeyStroke(
-//                KeyEvent.VK_N, ActionEvent.ALT_MASK));
-//        menuItem.setActionCommand("new");
-////        menuItem.addActionListener(this);
-//        menu.add(menuItem);
-// 
-//        //Set up the second menu item.
-//        menuItem = new JMenuItem("Quit");
-//        menuItem.setMnemonic(KeyEvent.VK_Q);
-//        menuItem.setAccelerator(KeyStroke.getKeyStroke(
-//                KeyEvent.VK_Q, ActionEvent.ALT_MASK));
-//        menuItem.setActionCommand("quit");
-////        menuItem.addActionListener(this);
-//        menu.add(menuItem);
-// 
-//        return menuBar;
-//    }
-    
-    private JMenuBar generateMenuBar()
-    {
-        JMenuBar menuBar = new JMenuBar();
-        
-        JMenu lookAndFeelMenu = new JMenu("Режим отображения");
-        lookAndFeelMenu.setMnemonic(KeyEvent.VK_V);
-        lookAndFeelMenu.getAccessibleContext().setAccessibleDescription(
-                "Управление режимом отображения приложения");
-        
-        {
-            JMenuItem systemLookAndFeel = new JMenuItem("Системная схема", KeyEvent.VK_S);
-            systemLookAndFeel.addActionListener((event) -> {
-                setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                this.invalidate();
-            });
-            lookAndFeelMenu.add(systemLookAndFeel);
-        }
 
-        {
-            JMenuItem crossplatformLookAndFeel = new JMenuItem("Универсальная схема", KeyEvent.VK_S);
-            crossplatformLookAndFeel.addActionListener((event) -> {
-                setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-                this.invalidate();
-            });
-            lookAndFeelMenu.add(crossplatformLookAndFeel);
-        }
-
-        JMenu testMenu = new JMenu("Тесты");
-        testMenu.setMnemonic(KeyEvent.VK_T);
-        testMenu.getAccessibleContext().setAccessibleDescription(
-                "Тестовые команды");
-        
-        {
-            JMenuItem addLogMessageItem = new JMenuItem("Сообщение в лог", KeyEvent.VK_S);
-            addLogMessageItem.addActionListener((event) -> {
-                Logger.debug("Новая строка");
-            });
-            testMenu.add(addLogMessageItem);
-        }
-
-        menuBar.add(lookAndFeelMenu);
-        menuBar.add(testMenu);
-        return menuBar;
-    }
-    
-    private void setLookAndFeel(String className)
-    {
-        try
-        {
+    public void setLookAndFeel(String className) {
+        try {
             UIManager.setLookAndFeel(className);
             SwingUtilities.updateComponentTreeUI(this);
+        } catch (Exception e) {
+            System.err.println("Failed to set look and feel: " + e.getMessage());
         }
-        catch (ClassNotFoundException | InstantiationException
-            | IllegalAccessException | UnsupportedLookAndFeelException e)
-        {
-            // just ignore
+    }
+
+    private void restoreWindowConfiguration() {
+        stateManager.restoreWindowState(this, desktopPane);
+    }
+
+    private void setupWindowFocusBehavior() {
+        System.out.println("Настройка поведения фокуса для окон...");
+
+        for (JInternalFrame frame : desktopPane.getAllFrames()) {
+            addMouseListenerToAllComponents(frame, frame);
         }
+
+        System.out.println("Поведение фокуса настроено для " +
+                desktopPane.getAllFrames().length + " окон");
+    }
+
+    private void addMouseListenerToAllComponents(JInternalFrame frame, java.awt.Component component) {
+        component.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                bringToFront(frame);
+            }
+        });
+
+        if (component instanceof java.awt.Container) {
+            java.awt.Container container = (java.awt.Container) component;
+            for (java.awt.Component child : container.getComponents()) {
+                addMouseListenerToAllComponents(frame, child);
+            }
+        }
+    }
+
+    private void bringToFront(JInternalFrame frame) {
+        desktopPane.moveToFront(frame);
+        try {
+            frame.setSelected(true);
+        } catch (java.beans.PropertyVetoException e) {
+        }
+        System.out.println("Окно " + frame.getName() + " поднято на передний план");
+    }
+
+    private void setupCloseHandler() {
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                System.out.println("Сохранение конфигурации перед закрытием...");
+                saveWindowConfiguration();
+                dispose();
+                System.exit(0);
+            }
+        });
+    }
+
+    private void saveWindowConfiguration() {
+        java.awt.Rectangle frameBounds = getBounds();
+        config.saveWindowState("mainWindow", frameBounds, false, 0);
+
+        JInternalFrame[] frames = desktopPane.getAllFrames();
+        for (int i = 0; i < frames.length; i++) {
+            JInternalFrame internalFrame = frames[i];
+            if (internalFrame.isVisible()) {
+                String windowId = internalFrame.getName();
+                if (windowId == null || windowId.isEmpty()) {
+                    windowId = internalFrame.getClass().getSimpleName();
+                }
+
+                java.awt.Rectangle bounds = internalFrame.getBounds();
+                boolean minimized = internalFrame.isIcon();
+                int zOrder = i;
+
+                config.saveWindowState(windowId, bounds, minimized, zOrder);
+                System.out.println("Сохранено окно: " + windowId);
+            }
+        }
+
+        System.out.println("Конфигурация окон сохранена");
     }
 }
