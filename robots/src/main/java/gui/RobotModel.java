@@ -4,6 +4,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 public class RobotModel {
+    private int m_windowWidth = 800;
+    private int m_windowHeight = 600;
+
     private double m_robotPositionX = 100;
     private double m_robotPositionY = 100;
     private double m_robotDirection = 0;
@@ -115,6 +118,11 @@ public class RobotModel {
             angle -= 2 * Math.PI;
         }
         return angle;
+    }
+
+    public void setWindowSize(int width, int height) {
+        this.m_windowWidth = width;
+        this.m_windowHeight = height;
     }
 
     public double getRobotPositionX() {
