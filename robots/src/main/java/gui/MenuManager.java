@@ -8,7 +8,7 @@ public class MenuManager {
     private final MainApplicationFrame frame; // Ссылка на главное окно
     private final RobotModel robotModel;       // Ссылка на модель робота
 
-    // Обновленный конструктор: теперь принимает и фрейм, и модель
+    //конструктор теперь принимает и фрейм, и модель
     public MenuManager(MainApplicationFrame frame, RobotModel robotModel) {
         this.frame = frame;
         this.robotModel = robotModel;
