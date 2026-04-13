@@ -2,42 +2,61 @@ package gui;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.*;
 import log.Logger;
 
-public class MainApplicationFrame extends JFrame { //наследует функционал стандартного окна ос
+/**
+ * Главное окно приложения, наследующее функционал стандартного окна ОС (JFrame).
+ */
+public class MainApplicationFrame extends JFrame {
     private final JDesktopPane desktopPane = new JDesktopPane();
+    // Из первого файла: модель робота для синхронизации данных между окнами
+    private final RobotModel robotModel;
 
     public MainApplicationFrame() {
+        // Инициализируем модель робота
+        robotModel = new RobotModel();
+
         int inset = 50;
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setBounds(inset, inset,
-                screenSize.width  - inset*2,
-                screenSize.height - inset*2);
+                screenSize.width - inset * 2,
+                screenSize.height - inset * 2);
 
-        setContentPane(desktopPane); //делает рабочий стол главное областью окна
+        // Делаем рабочий стол главной областью окна
+        setContentPane(desktopPane);
 
-        addWindow(createLogWindow()); //начальные окна
-        addWindow(new GameWindow()); //размер задается внутри или через pack()
+        // Инициализация и добавление окон
+        addWindow(createLogWindow());
 
-        MenuManager menuManager = new MenuManager(this); //инициализация через отдельный класс
+        // Передаем robotModel в GameWindow, как в первом файле
+        GameWindow gameWindow = new GameWindow(robotModel);
+        gameWindow.setSize(400, 400);
+        addWindow(gameWindow);
+
+        // Добавляем окно координат робота из первого файла
+        RobotCoordinatesWindow coordWindow = new RobotCoordinatesWindow(robotModel);
+        addWindow(coordWindow);
+
+        // Инициализация меню через отдельный класс (структура второго файла)
+        MenuManager menuManager = new MenuManager(this, robotModel);
         setJMenuBar(menuManager.generateMenuBar());
 
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE); //обработка выхода из приложения
+        // Настройка закрытия приложения с подтверждением
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                performExit(); //после нажатия
+                performExit();
             }
         });
     }
 
     protected LogWindow createLogWindow() {
         LogWindow logWindow = new LogWindow(Logger.getDefaultLogSource());
-        logWindow.setLocation(10,10);
+        logWindow.setLocation(10, 10);
         logWindow.setSize(300, 800);
         setMinimumSize(logWindow.getSize());
         logWindow.pack();
@@ -45,21 +64,28 @@ public class MainApplicationFrame extends JFrame { //наследует функ
         return logWindow;
     }
 
-    protected void addWindow(JInternalFrame frame) { //логика добавления
+    protected void addWindow(JInternalFrame frame) {
         desktopPane.add(frame);
         frame.setVisible(true);
     }
 
-    public void setLookAndFeel(String className) { //паблик чтобы MM мог вызвать
+    /**
+     * Изменение внешнего вида (LookAndFeel).
+     * Сделан public, чтобы MenuManager мог вызывать его.
+     */
+    public void setLookAndFeel(String className) {
         try {
             UIManager.setLookAndFeel(className);
             SwingUtilities.updateComponentTreeUI(this);
         } catch (Exception e) {
-            // ignore
+            // Игнорируем ошибки при смене темы
         }
     }
 
-    public void performExit() { //диалог подтверждения на русском
+    /**
+     * Диалог подтверждения выхода на русском языке.
+     */
+    public void performExit() {
         Object[] options = {"Да", "Нет"};
         int n = JOptionPane.showOptionDialog(this,
                 "Вы действительно хотите выйти?",

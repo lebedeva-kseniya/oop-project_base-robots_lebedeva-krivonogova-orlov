@@ -5,13 +5,16 @@ import javax.swing.*;
 import log.Logger;
 
 public class MenuManager {
-    private final MainApplicationFrame frame; //ссылка на главное окно
+    private final MainApplicationFrame frame; // Ссылка на главное окно
+    private final RobotModel robotModel;       // Ссылка на модель робота
 
-    public MenuManager(MainApplicationFrame frame) {
+    // Обновленный конструктор: теперь принимает и фрейм, и модель
+    public MenuManager(MainApplicationFrame frame, RobotModel robotModel) {
         this.frame = frame;
+        this.robotModel = robotModel;
     }
 
-    public JMenuBar generateMenuBar() { //собирает все части меню в одну панель
+    public JMenuBar generateMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(createLookAndFeelMenu());
         menuBar.add(createTestMenu());
@@ -20,21 +23,21 @@ public class MenuManager {
     }
 
     private JMenu createLookAndFeelMenu() {
-        JMenu lookAndFeelMenu = new JMenu("Режим отображения"); //новый объект меню
-        lookAndFeelMenu.setMnemonic(KeyEvent.VK_V); //alt+M (V на англ)
+        JMenu lookAndFeelMenu = new JMenu("Режим отображения");
+        lookAndFeelMenu.setMnemonic(KeyEvent.VK_V);
 
-        JMenuItem systemLookAndFeel = new JMenuItem("Системная схема", KeyEvent.VK_S); //пункт меню
-        systemLookAndFeel.addActionListener((event) -> { //когда пользователь нажмет, выполнить
-            frame.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); //меняет оформление, возвращает имя стиля ос
+        JMenuItem systemLookAndFeel = new JMenuItem("Системная схема", KeyEvent.VK_S);
+        systemLookAndFeel.addActionListener((event) -> {
+            frame.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         });
 
-        JMenuItem crossplatformLookAndFeel = new JMenuItem("Универсальная схема", KeyEvent.VK_S);
+        JMenuItem crossplatformLookAndFeel = new JMenuItem("Универсальная схема", KeyEvent.VK_U); // Изменил на U, чтобы не дублировать S
         crossplatformLookAndFeel.addActionListener((event) -> {
-            frame.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName()); //универсальный стиль джава
+            frame.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
         });
 
-        lookAndFeelMenu.add(systemLookAndFeel); //добавляет первую кнопку
-        lookAndFeelMenu.add(crossplatformLookAndFeel); //вторую
+        lookAndFeelMenu.add(systemLookAndFeel);
+        lookAndFeelMenu.add(crossplatformLookAndFeel);
         return lookAndFeelMenu;
     }
 
@@ -42,20 +45,29 @@ public class MenuManager {
         JMenu testMenu = new JMenu("Тесты");
         testMenu.setMnemonic(KeyEvent.VK_T);
 
+        // Стандартный тест лога
         JMenuItem addLogMessageItem = new JMenuItem("Сообщение в лог", KeyEvent.VK_S);
         addLogMessageItem.addActionListener((event) -> {
             Logger.debug("Новая строка");
         });
 
-        testMenu.add(addLogMessageItem); //добавляет
+        JMenuItem showRobotCoordsItem = new JMenuItem("Показать координаты робота", KeyEvent.VK_R);
+        showRobotCoordsItem.addActionListener((event) -> {
+            Logger.debug("X: " + robotModel.getRobotPositionX() +
+                    ", Y: " + robotModel.getRobotPositionY() +
+                    ", Направление: " + Math.toDegrees(robotModel.getRobotDirection()) + "°");
+        });
+
+        testMenu.add(addLogMessageItem);
+        testMenu.add(showRobotCoordsItem); // Добавляем новый пункт
         return testMenu;
     }
 
-    private JMenu createQuitMenu() { //меню для закрытия приложения
+    private JMenu createQuitMenu() {
         JMenu menu = new JMenu("Выход");
         menu.setMnemonic(KeyEvent.VK_Q);
         JMenuItem exitItem = new JMenuItem("Завершить работу", KeyEvent.VK_X);
-        exitItem.addActionListener(e -> frame.performExit()); //вызывает метод
+        exitItem.addActionListener(e -> frame.performExit());
         menu.add(exitItem);
         return menu;
     }
