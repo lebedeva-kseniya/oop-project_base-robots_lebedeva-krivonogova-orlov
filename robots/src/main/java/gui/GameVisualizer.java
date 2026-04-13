@@ -16,18 +16,11 @@ import javax.swing.JPanel;
 public class GameVisualizer extends JPanel
 {
     private final Timer m_timer = initTimer();
-    private volatile int m_windowWidth = 800;
-    private volatile int m_windowHeight = 600;
     
     private static Timer initTimer() 
     {
         Timer timer = new Timer("events generator", true);
         return timer;
-    }
-
-    public void updateWindowSize(int width, int height) {
-        m_windowWidth = Math.max(1, width);
-        m_windowHeight = Math.max(1, height);
     }
     
     private volatile double m_robotPositionX = 100;
@@ -42,10 +35,6 @@ public class GameVisualizer extends JPanel
     
     public GameVisualizer() 
     {
-        java.awt.Dimension size = getSize();
-        if (size.width > 0 && size.height > 0) {
-            updateWindowSize(size.width, size.height);
-        }
         m_timer.schedule(new TimerTask()
         {
             @Override
@@ -72,12 +61,6 @@ public class GameVisualizer extends JPanel
             }
         });
         setDoubleBuffered(true);
-    }
-
-    @Override
-    public void setBounds(int x, int y, int width, int height) {
-        super.setBounds(x, y, width, height);
-        updateWindowSize(width, height);
     }
 
     protected void setTargetPosition(Point p)
@@ -156,22 +139,10 @@ public class GameVisualizer extends JPanel
         {
             newY = m_robotPositionY + velocity * duration * Math.sin(m_robotDirection);
         }
-        newX = wrapCoordinate(newX, m_windowWidth);
-        newY = wrapCoordinate(newY, m_windowHeight);
         m_robotPositionX = newX;
         m_robotPositionY = newY;
         double newDirection = asNormalizedRadians(m_robotDirection + angularVelocity * duration); 
         m_robotDirection = newDirection;
-    }
-
-    private double wrapCoordinate(double coordinate, double boundary) {
-        while (coordinate < 0) {
-            coordinate += boundary;
-        }
-        while (coordinate >= boundary) {
-            coordinate -= boundary;
-        }
-        return coordinate;
     }
 
     private static double asNormalizedRadians(double angle)
