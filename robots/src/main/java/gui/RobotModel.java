@@ -45,34 +45,9 @@ public class RobotModel {
         propertyChangeSupport.firePropertyChange("direction", oldDir, direction);
     }
 
-    public List<Point> getObstacles() {
-        return new ArrayList<>(m_obstacles);
-    }
-
-    public void addObstacle(Point p) {
-        m_obstacles.add(p);
-        propertyChangeSupport.firePropertyChange("obstacles", null, getObstacles());
-    }
-
-    public void clearObstacles() {
-        m_obstacles.clear();
-        propertyChangeSupport.firePropertyChange("obstacles", null, getObstacles());
-    }
-
     public void setWindowSize(int width, int height) {
         this.m_windowWidth = width;
         this.m_windowHeight = height;
-    }
-
-    public boolean removeObstacleAt(Point p) {
-        synchronized (m_obstacles) {
-            boolean removed = m_obstacles.removeIf(obs -> p.distance(obs) < 20);
-
-            if (removed) {
-                propertyChangeSupport.firePropertyChange("obstacles", null, getObstacles());
-            }
-            return removed;
-        }
     }
 
     public double getRobotPositionX() {

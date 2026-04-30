@@ -1,13 +1,13 @@
 package gui;
 
 import log.Logger;
+
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.JPanel;
@@ -25,7 +25,7 @@ public class GameVisualizer extends JPanel implements PropertyChangeListener {
     public GameVisualizer(RobotModel model, RobotController controller) {
         this.m_model = model;
         this.m_controller = controller;
-        this.m_model.addPropertyChangeListener(this);
+        this.m_controller.addPropertyChangeListener(this);
 
         m_timer.schedule(new TimerTask() {
             @Override
@@ -40,19 +40,14 @@ public class GameVisualizer extends JPanel implements PropertyChangeListener {
                 Point clickPoint = e.getPoint();
 
                 if (SwingUtilities.isLeftMouseButton(e)) {
-                    m_controller.addTarget(e.getPoint());
-                    Logger.debug("Точка добавлена в очередь: " + e.getPoint());
+                    m_controller.addTarget(clickPoint);
+                    Logger.debug("Цель установлена: " + clickPoint.x + ", " + clickPoint.y);
                 } else if (SwingUtilities.isRightMouseButton(e)) {
-
-                    boolean removed = m_model.removeObstacleAt(clickPoint);
-
-                    if (removed) {
-                        m_controller.notifyObstacleChanged();
-                        Logger.debug("Препятствие удалено: " + clickPoint);
+                    if (m_controller.removeObstacleAt(clickPoint)) {
+                        Logger.debug("Препятствие удалено в точке: " + clickPoint.x + ", " + clickPoint.y);
                     } else {
-                        m_model.addObstacle(clickPoint);
-                        m_controller.notifyObstacleChanged();
-                        Logger.debug("Препятствие установлено: " + clickPoint);
+                        m_controller.addObstacle(clickPoint);
+                        Logger.debug("Препятствие установлено: " + clickPoint.x + ", " + clickPoint.y);
                     }
                 }
             }
@@ -61,38 +56,32 @@ public class GameVisualizer extends JPanel implements PropertyChangeListener {
         setDoubleBuffered(true);
     }
 
-    protected void onRedrawEvent() {
+    private void onRedrawEvent() {
         EventQueue.invokeLater(this::repaint);
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        repaint();
-    }
-
-    private static int round(double value) {
-        return (int) (value + 0.5);
+        if ("obstacles".equals(evt.getPropertyName())) {
+            m_controller.notifyObstacleChanged();
+        }
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         drawTargets(g2d);
-
         drawObstacles(g2d);
-
         drawRobot(g2d,
-                round(m_model.getRobotPositionX()),
-                round(m_model.getRobotPositionY()),
-                m_model.getRobotDirection());
+                (int) Math.round(m_model.getRobotPositionX()),
+                (int) Math.round(m_model.getRobotPositionY()),
+                m_model.getRobotDirection()
+        );
     }
 
     private void drawTargets(Graphics2D g) {
-        AffineTransform saveAT = g.getTransform();
-        g.setTransform(new AffineTransform());
-
         g.setColor(Color.GREEN);
         for (Point target : m_controller.getTargets()) {
             fillOval(g, target.x, target.y, 5, 5);
@@ -100,13 +89,11 @@ public class GameVisualizer extends JPanel implements PropertyChangeListener {
             drawOval(g, target.x, target.y, 5, 5);
             g.setColor(Color.GREEN);
         }
-
-        g.setTransform(saveAT);
     }
 
     private void drawObstacles(Graphics2D g) {
         g.setColor(Color.RED);
-        for (Point obs : m_model.getObstacles()) {
+        for (Point obs : m_controller.getObstacles()) {
             g.drawOval(obs.x - 20, obs.y - 20, 40, 40);
             g.fillOval(obs.x - 5, obs.y - 5, 10, 10);
         }
@@ -115,8 +102,7 @@ public class GameVisualizer extends JPanel implements PropertyChangeListener {
     private void drawRobot(Graphics2D g, int x, int y, double direction) {
         AffineTransform saveAT = g.getTransform();
 
-        AffineTransform t = AffineTransform.getRotateInstance(direction, x, y);
-        g.setTransform(t);
+        g.rotate(direction, x, y);
 
         g.setColor(Color.MAGENTA);
         fillOval(g, x, y, 30, 10);
@@ -130,11 +116,11 @@ public class GameVisualizer extends JPanel implements PropertyChangeListener {
         g.setTransform(saveAT);
     }
 
-    private static void fillOval(Graphics g, int centerX, int centerY, int diam1, int diam2) {
-        g.fillOval(centerX - diam1 / 2, centerY - diam2 / 2, diam1, diam2);
+    private static void fillOval(Graphics g, int centerX, int centerY, int width, int height) {
+        g.fillOval(centerX - width / 2, centerY - height / 2, width, height);
     }
 
-    private static void drawOval(Graphics g, int centerX, int centerY, int diam1, int diam2) {
-        g.drawOval(centerX - diam1 / 2, centerY - diam2 / 2, diam1, diam2);
+    private static void drawOval(Graphics g, int centerX, int centerY, int width, int height) {
+        g.drawOval(centerX - width / 2, centerY - height / 2, width, height);
     }
 }
