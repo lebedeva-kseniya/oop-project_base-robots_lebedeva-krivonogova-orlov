@@ -12,21 +12,23 @@ import log.Logger;
 public class MainApplicationFrame extends JFrame {
     private final JDesktopPane desktopPane = new JDesktopPane();
 
-    // Поля из Task 2 (сохранение состояния)
     private final WindowConfig config;
     private final WindowStateManager stateManager;
 
-    // Поля из Task 1 (робот и меню)
     private final RobotModel robotModel;
     private final MenuManager menuManager;
+    private final RobotController robotController;
 
     public MainApplicationFrame() {
-        // Инициализация логики
         this.robotModel = new RobotModel();
+        this.robotController = new RobotController(robotModel);
+
+        Thread controllerThread = new Thread(robotController, "RobotControllerThread");
+        controllerThread.setDaemon(true);
+        controllerThread.start();
+
         this.config = new WindowConfig();
         this.stateManager = new WindowStateManager(config);
-
-        // Передаем robotModel в MenuManager
         this.menuManager = new MenuManager(this, robotModel);
 
         initializeFrame();
@@ -54,18 +56,15 @@ public class MainApplicationFrame extends JFrame {
     }
 
     private void addDefaultWindows() {
-        // Окно лога
         LogWindow logWindow = createLogWindow();
         logWindow.setName("LogWindow");
         addWindow(logWindow);
 
-        // Окно игры (с передачей модели)
-        GameWindow gameWindow = new GameWindow(robotModel);
+        GameWindow gameWindow = new GameWindow(robotModel, robotController);
         gameWindow.setName("GameWindow");
         gameWindow.setSize(400, 400);
         addWindow(gameWindow);
 
-        // Окно координат (с передачей модели)
         RobotCoordinatesWindow coordWindow = new RobotCoordinatesWindow(robotModel);
         coordWindow.setName("CoordinateWindow");
         addWindow(coordWindow);
@@ -74,7 +73,6 @@ public class MainApplicationFrame extends JFrame {
     }
 
     private void setupMenuBar() {
-        // Используем MenuManager
         setJMenuBar(menuManager.generateMenuBar());
     }
 
@@ -101,8 +99,6 @@ public class MainApplicationFrame extends JFrame {
             System.err.println("Failed to set look and feel: " + e.getMessage());
         }
     }
-
-    // --- Логика из Task 2 (Сохранение) ---
 
     private void restoreWindowConfiguration() {
         stateManager.restoreWindowState(this, desktopPane);
@@ -136,8 +132,6 @@ public class MainApplicationFrame extends JFrame {
         } catch (java.beans.PropertyVetoException ignored) {}
     }
 
-    // --- Логика выхода (Объединение Task 1 и Task 2) ---
-
     private void setupCloseHandler() {
         addWindowListener(new WindowAdapter() {
             @Override
@@ -159,7 +153,6 @@ public class MainApplicationFrame extends JFrame {
                 options[0]);
 
         if (n == JOptionPane.YES_OPTION) {
-            // Перед выходом сохраняем настройки (из Task 2)
             saveWindowConfiguration();
             System.exit(0);
         }
