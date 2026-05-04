@@ -5,10 +5,9 @@ import javax.swing.*;
 import log.Logger;
 
 public class MenuManager {
-    private final MainApplicationFrame frame; // Ссылка на главное окно
-    private final RobotModel robotModel;       // Ссылка на модель робота
+    private final MainApplicationFrame frame;
+    private final RobotModel robotModel;
 
-    //конструктор теперь принимает и фрейм, и модель
     public MenuManager(MainApplicationFrame frame, RobotModel robotModel) {
         this.frame = frame;
         this.robotModel = robotModel;
@@ -48,14 +47,17 @@ public class MenuManager {
 
         JMenuItem addLogMessageItem = new JMenuItem(LocalizationSupport.get("menu.tests.log_message"), KeyEvent.VK_S);
         addLogMessageItem.addActionListener((event) -> {
-            Logger.debug("Новая строка");
+            Logger.debug(LocalizationSupport.get("log.message.new_line"));
         });
 
         JMenuItem showRobotCoordsItem = new JMenuItem(LocalizationSupport.get("menu.tests.robot_coords"), KeyEvent.VK_R);
         showRobotCoordsItem.addActionListener((event) -> {
-            Logger.debug("X: " + robotModel.getRobotPositionX() +
-                    ", Y: " + robotModel.getRobotPositionY() +
-                    ", Направление: " + Math.toDegrees(robotModel.getRobotDirection()) + "°");
+            String pattern = LocalizationSupport.get("log.robot.coords");
+            String logMessage = LocalizationSupport.formatWithMessageFormatCache(pattern,
+                    robotModel.getRobotPositionX(),
+                    robotModel.getRobotPositionY(),
+                    Math.toDegrees(robotModel.getRobotDirection()));
+            Logger.debug(logMessage);
         });
 
         testMenu.add(addLogMessageItem);
