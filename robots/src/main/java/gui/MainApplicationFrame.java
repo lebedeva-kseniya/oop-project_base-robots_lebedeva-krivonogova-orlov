@@ -167,4 +167,8 @@ public class MainApplicationFrame extends JFrame {
             config.saveWindowState(id, f.getBounds(), f.isIcon(), i);
         }
     }
+
+    public JDesktopPane getDesktopPane() {
+        return desktopPane;
+    }
 }
