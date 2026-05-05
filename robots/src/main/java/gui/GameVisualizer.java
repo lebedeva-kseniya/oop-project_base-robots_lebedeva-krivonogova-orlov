@@ -38,16 +38,15 @@ public class GameVisualizer extends JPanel implements PropertyChangeListener {
             @Override
             public void mouseClicked(MouseEvent e) {
                 Point clickPoint = e.getPoint();
-
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     m_controller.addTarget(clickPoint);
-                    Logger.debug("Цель установлена: " + clickPoint.x + ", " + clickPoint.y);
+                    Logger.debug("log.target_set|" + clickPoint.x + "|" + clickPoint.y);
                 } else if (SwingUtilities.isRightMouseButton(e)) {
                     if (m_controller.removeObstacleAt(clickPoint)) {
-                        Logger.debug("Препятствие удалено в точке: " + clickPoint.x + ", " + clickPoint.y);
+                        Logger.debug("log.obstacle_removed|" + clickPoint.x + "|" + clickPoint.y);
                     } else {
                         m_controller.addObstacle(clickPoint);
-                        Logger.debug("Препятствие установлено: " + clickPoint.x + ", " + clickPoint.y);
+                        Logger.debug("log.obstacle_added|" + clickPoint.x + "|" + clickPoint.y);
                     }
                 }
             }

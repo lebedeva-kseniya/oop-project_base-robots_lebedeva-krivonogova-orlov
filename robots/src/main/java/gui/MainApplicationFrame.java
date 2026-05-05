@@ -82,7 +82,7 @@ public class MainApplicationFrame extends JFrame {
         logWindow.setSize(300, 800);
         setMinimumSize(logWindow.getSize());
         logWindow.pack();
-        Logger.debug("Протокол работает");
+        Logger.debug("log.status_ok");
         return logWindow;
     }
 
@@ -142,10 +142,14 @@ public class MainApplicationFrame extends JFrame {
     }
 
     public void performExit() {
-        Object[] options = {"Да", "Нет"};
+        Object[] options = {
+                LocalizationSupport.get("dialog.exit.yes"),
+                LocalizationSupport.get("dialog.exit.no")
+        };
+
         int n = JOptionPane.showOptionDialog(this,
-                "Вы действительно хотите выйти?",
-                "Подтверждение выхода",
+                LocalizationSupport.get("dialog.exit.message"),
+                LocalizationSupport.get("dialog.exit.title"),
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null,

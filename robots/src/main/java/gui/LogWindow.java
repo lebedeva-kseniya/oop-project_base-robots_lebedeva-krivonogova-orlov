@@ -31,15 +31,26 @@ public class LogWindow extends JInternalFrame implements LogChangeListener
         updateLogContent();
     }
 
-    private void updateLogContent()
-    {
+    private void updateLogContent() {
         StringBuilder content = new StringBuilder();
-        for (LogEntry entry : m_logSource.all())
-        {
-            content.append(entry.getMessage()).append("\n");
+        for (LogEntry entry : m_logSource.all()) {
+            String rawMessage = entry.getMessage();
+            String translated;
+
+            if (rawMessage.contains("|")) {
+                String[] parts = rawMessage.split("\\|");
+                String key = parts[0];
+                Object[] args = new Object[parts.length - 1];
+                System.arraycopy(parts, 1, args, 0, parts.length - 1);
+
+                translated = LocalizationSupport.format(key, args);
+            } else {
+                translated = LocalizationSupport.get(rawMessage);
+            }
+
+            content.append(translated).append("\n");
         }
         m_logContent.setText(content.toString());
-        m_logContent.invalidate();
     }
     
     @Override

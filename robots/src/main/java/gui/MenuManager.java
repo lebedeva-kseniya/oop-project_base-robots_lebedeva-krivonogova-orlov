@@ -47,17 +47,16 @@ public class MenuManager {
 
         JMenuItem addLogMessageItem = new JMenuItem(LocalizationSupport.get("menu.tests.log_message"), KeyEvent.VK_S);
         addLogMessageItem.addActionListener((event) -> {
-            Logger.debug(LocalizationSupport.get("log.message.new_line"));
+            Logger.debug("log.message.new_line");
         });
 
         JMenuItem showRobotCoordsItem = new JMenuItem(LocalizationSupport.get("menu.tests.robot_coords"), KeyEvent.VK_R);
         showRobotCoordsItem.addActionListener((event) -> {
-            String pattern = LocalizationSupport.get("log.robot.coords");
-            String logMessage = LocalizationSupport.formatWithMessageFormatCache(pattern,
-                    robotModel.getRobotPositionX(),
-                    robotModel.getRobotPositionY(),
-                    Math.toDegrees(robotModel.getRobotDirection()));
-            Logger.debug(logMessage);
+            String logEntry = "log.robot.coords|"
+                    + robotModel.getRobotPositionX() + "|"
+                    + robotModel.getRobotPositionY() + "|"
+                    + Math.toDegrees(robotModel.getRobotDirection());
+            Logger.debug(logEntry);
         });
 
         testMenu.add(addLogMessageItem);
@@ -105,6 +104,7 @@ public class MenuManager {
                 internalFrame.setTitle(LocalizationSupport.get("window.title.game"));
             } else if (internalFrame instanceof LogWindow) {
                 internalFrame.setTitle(LocalizationSupport.get("window.title.log"));
+                ((LogWindow) internalFrame).onLogChanged();
             }
         }
 
