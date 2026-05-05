@@ -52,7 +52,8 @@ public class MenuManager {
 
         JMenuItem showRobotCoordsItem = new JMenuItem(LocalizationSupport.get("menu.tests.robot_coords"), KeyEvent.VK_R);
         showRobotCoordsItem.addActionListener((event) -> {
-            String logEntry = "log.robot.coords|"
+            String robotCoordsKey = "log.robot.coords";
+            String logEntry = robotCoordsKey + "|"
                     + robotModel.getRobotPositionX() + "|"
                     + robotModel.getRobotPositionY() + "|"
                     + Math.toDegrees(robotModel.getRobotDirection());
