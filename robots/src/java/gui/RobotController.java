@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.awt.Point;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import javax.swing.event.EventListenerList;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 

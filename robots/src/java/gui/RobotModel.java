@@ -62,4 +62,10 @@ public class RobotModel {
         return m_robotDirection;
     }
 
+    public String getCoordsLogMessage() {
+        return LocalizationSupport.format("log.robot.coords",
+                getRobotPositionX(),
+                getRobotPositionY(),
+                Math.toDegrees(getRobotDirection()));
+    }
 }

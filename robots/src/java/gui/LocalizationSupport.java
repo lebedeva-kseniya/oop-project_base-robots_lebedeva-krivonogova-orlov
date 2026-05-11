@@ -1,7 +1,6 @@
 package gui;
 
 import java.text.MessageFormat;
-import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -12,8 +11,6 @@ public class LocalizationSupport {
     private static ResourceBundle resourceBundle;
 
     private static final Map<String, MessageFormat> mfCache = new HashMap<>();
-    private static final Map<String, Formatter> fCache = new HashMap<>();
-    private static final Map<String, StringBuilder> sbCache = new HashMap<>();
 
     static {
         try {
@@ -30,8 +27,6 @@ public class LocalizationSupport {
             resourceBundle = null;
         }
         mfCache.clear();
-        fCache.clear();
-        sbCache.clear();
     }
 
     public static String get(String key) {
@@ -41,28 +36,6 @@ public class LocalizationSupport {
         } catch (Exception e) {
             return "!" + key + "!";
         }
-    }
-
-    public static String formatWithFormatter(String pattern, Object... args) {
-        return String.format(pattern, args);
-    }
-
-    public static String formatWithFormatterCache(String pattern, Object... args) {
-        Formatter f = fCache.get(pattern);
-        StringBuilder sb = sbCache.get(pattern);
-        if (f == null) {
-            sb = new StringBuilder();
-            f = new Formatter(sb);
-            fCache.put(pattern, f);
-            sbCache.put(pattern, sb);
-        }
-        sb.setLength(0);
-        f.format(pattern, args);
-        return sb.toString();
-    }
-
-    public static String formatWithMessageFormat(String pattern, Object... args) {
-        return MessageFormat.format(pattern, args);
     }
 
     public static String formatWithMessageFormatCache(String pattern, Object... args) {

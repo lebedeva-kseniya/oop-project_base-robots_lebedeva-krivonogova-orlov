@@ -1,6 +1,7 @@
 package gui;
 
 import java.awt.event.KeyEvent;
+import java.util.Locale;
 import javax.swing.*;
 import log.Logger;
 
@@ -52,12 +53,7 @@ public class MenuManager {
 
         JMenuItem showRobotCoordsItem = new JMenuItem(LocalizationSupport.get("menu.tests.robot_coords"), KeyEvent.VK_R);
         showRobotCoordsItem.addActionListener((event) -> {
-            String robotCoordsKey = "log.robot.coords";
-            String logEntry = robotCoordsKey + "|"
-                    + robotModel.getRobotPositionX() + "|"
-                    + robotModel.getRobotPositionY() + "|"
-                    + Math.toDegrees(robotModel.getRobotDirection());
-            Logger.debug(logEntry);
+            Logger.debug(robotModel.getCoordsLogMessage());
         });
 
         testMenu.add(addLogMessageItem);
@@ -80,13 +76,13 @@ public class MenuManager {
 
         JMenuItem russian = new JMenuItem("Русский");
         russian.addActionListener(e -> {
-            LocalizationSupport.setLocale(new java.util.Locale("ru"));
+            LocalizationSupport.setLocale(new Locale("ru"));
             updateInterface();
         });
 
         JMenuItem english = new JMenuItem("English");
         english.addActionListener(e -> {
-            LocalizationSupport.setLocale(new java.util.Locale("en"));
+            LocalizationSupport.setLocale(new Locale("en"));
             updateInterface();
         });
 
