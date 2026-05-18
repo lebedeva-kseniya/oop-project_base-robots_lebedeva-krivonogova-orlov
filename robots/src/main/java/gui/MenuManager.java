@@ -53,7 +53,7 @@ public class MenuManager {
 
         JMenuItem showRobotCoordsItem = new JMenuItem(LocalizationSupport.get("menu.tests.robot_coords"), KeyEvent.VK_R);
         showRobotCoordsItem.addActionListener((event) -> {
-            Logger.debug(robotModel.getCoordsLogMessage());
+            Logger.debug(robotModel.getCoordsLogEntry());
         });
 
         testMenu.add(addLogMessageItem);

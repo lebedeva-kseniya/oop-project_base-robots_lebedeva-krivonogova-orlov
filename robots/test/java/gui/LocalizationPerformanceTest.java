@@ -1,65 +1,83 @@
 package gui;
 
+import log.LogWindowSource;
+import log.LogLevel;
 import org.junit.jupiter.api.Test;
 import java.text.MessageFormat;
 import java.util.Formatter;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LocalizationPerformanceTest {
 
     private final Map<String, Formatter> fCache = new HashMap<>();
     private final Map<String, StringBuilder> sbCache = new HashMap<>();
 
-    private String formatWithFormatterCacheLocal(String pattern, Object... args) {
+    private String formatWithFormatterCache(String pattern, Object... args) {
         Formatter f = fCache.get(pattern);
         StringBuilder sb = sbCache.get(pattern);
         if (f == null) {
             sb = new StringBuilder();
-            f = new Formatter(sb);
+            f = new Formatter(sb, Locale.US);
             fCache.put(pattern, f);
             sbCache.put(pattern, sb);
         }
         sb.setLength(0);
-        f.format(pattern, args);
+        f.format(Locale.US, pattern, args);
         return sb.toString();
     }
 
     @Test
-    public void testLocalizationPerformance() {
+    public void testLogWindowSourceQueue() {
+        LogWindowSource source = new LogWindowSource(2);
+        source.append(LogLevel.Debug, "test1");
+        source.append(LogLevel.Debug, "test2");
+        source.append(LogLevel.Debug, "test3");
+        assertEquals(2, source.size());
+    }
+
+    @Test
+    public void testPerformanceComparison() {
         String patternMF = "Робот в позиции {0}, {1}. Статус: {2}";
         String patternF = "Робот в позиции %s, %s. Статус: %s";
-        Object[] messageArgs = {10.5, 20.3, "Active"};
-        int iterations = 100000;
+        Object[] args = {10.5, 20.3, "Active"};
+        String expected = "Робот в позиции 10.5, 20.3. Статус: Active";
+        int iterations = 10000;
 
-        long start = System.nanoTime();
+        String formattedF = String.format(Locale.US, patternF, args);
+        long startF = System.nanoTime();
         for (int i = 0; i < iterations; i++) {
-            String.format(patternF, messageArgs);
+            String.format(Locale.US, patternF, args);
         }
-        long timeF = System.nanoTime() - start;
+        long timeF = System.nanoTime() - startF;
+        assertEquals(expected, formattedF);
 
-        start = System.nanoTime();
+        String formattedFCache = formatWithFormatterCache(patternF, args);
+        long startFCache = System.nanoTime();
         for (int i = 0; i < iterations; i++) {
-            formatWithFormatterCacheLocal(patternF, messageArgs);
+            formatWithFormatterCache(patternF, args);
         }
-        long timeFCache = System.nanoTime() - start;
+        long timeFCache = System.nanoTime() - startFCache;
+        assertEquals(expected, formattedFCache);
 
-        start = System.nanoTime();
+        String formattedMF = new MessageFormat(patternMF, Locale.US).format(args);
+        long startMF = System.nanoTime();
         for (int i = 0; i < iterations; i++) {
-            MessageFormat.format(patternMF, messageArgs);
+            new MessageFormat(patternMF, Locale.US).format(args);
         }
-        long timeMF = System.nanoTime() - start;
+        long timeMF = System.nanoTime() - startMF;
+        assertEquals(expected, formattedMF);
 
-        start = System.nanoTime();
+        String formattedMFCache = LocalizationSupport.formatWithMessageFormatCache(patternMF, args);
+        long startMFCache = System.nanoTime();
         for (int i = 0; i < iterations; i++) {
-            LocalizationSupport.formatWithMessageFormatCache(patternMF, messageArgs);
+            LocalizationSupport.formatWithMessageFormatCache(patternMF, args);
         }
-        long timeMFCache = System.nanoTime() - start;
+        long timeMFCache = System.nanoTime() - startMFCache;
+        assertEquals(expected, formattedMFCache);
 
-        System.out.println("Результаты анализа производительности (" + iterations + " итераций):");
-        System.out.println("1. Formatter без кэша: " + (timeF / 1_000_000) + " ms");
-        System.out.println("2. Formatter с кэшем: " + (timeFCache / 1_000_000) + " ms");
-        System.out.println("3. MessageFormat без кэша: " + (timeMF / 1_000_000) + " ms");
-        System.out.println("4. MessageFormat с кэшем (Используется): " + (timeMFCache / 1_000_000) + " ms");
+        assertTrue(timeMFCache < timeMF);
     }
 }
