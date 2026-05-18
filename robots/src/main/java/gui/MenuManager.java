@@ -1,14 +1,14 @@
 package gui;
 
 import java.awt.event.KeyEvent;
+import java.util.Locale;
 import javax.swing.*;
 import log.Logger;
 
 public class MenuManager {
-    private final MainApplicationFrame frame; // Ссылка на главное окно
-    private final RobotModel robotModel;       // Ссылка на модель робота
+    private final MainApplicationFrame frame;
+    private final RobotModel robotModel;
 
-    //конструктор теперь принимает и фрейм, и модель
     public MenuManager(MainApplicationFrame frame, RobotModel robotModel) {
         this.frame = frame;
         this.robotModel = robotModel;
@@ -17,21 +17,22 @@ public class MenuManager {
     public JMenuBar generateMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(createLookAndFeelMenu());
+        menuBar.add(createLanguageMenu());
         menuBar.add(createTestMenu());
         menuBar.add(createQuitMenu());
         return menuBar;
     }
 
     private JMenu createLookAndFeelMenu() {
-        JMenu lookAndFeelMenu = new JMenu("Режим отображения");
+        JMenu lookAndFeelMenu = new JMenu(LocalizationSupport.get("menu.view_mode"));
         lookAndFeelMenu.setMnemonic(KeyEvent.VK_V);
 
-        JMenuItem systemLookAndFeel = new JMenuItem("Системная схема", KeyEvent.VK_S);
+        JMenuItem systemLookAndFeel = new JMenuItem(LocalizationSupport.get("menu.view_mode.system"), KeyEvent.VK_S);
         systemLookAndFeel.addActionListener((event) -> {
             frame.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         });
 
-        JMenuItem crossplatformLookAndFeel = new JMenuItem("Универсальная схема", KeyEvent.VK_U); // Изменил на U, чтобы не дублировать S
+        JMenuItem crossplatformLookAndFeel = new JMenuItem(LocalizationSupport.get("menu.view_mode.universal"), KeyEvent.VK_U);
         crossplatformLookAndFeel.addActionListener((event) -> {
             frame.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
         });
@@ -42,33 +43,68 @@ public class MenuManager {
     }
 
     private JMenu createTestMenu() {
-        JMenu testMenu = new JMenu("Тесты");
+        JMenu testMenu = new JMenu(LocalizationSupport.get("menu.tests"));
         testMenu.setMnemonic(KeyEvent.VK_T);
 
-        // Стандартный тест лога
-        JMenuItem addLogMessageItem = new JMenuItem("Сообщение в лог", KeyEvent.VK_S);
+        JMenuItem addLogMessageItem = new JMenuItem(LocalizationSupport.get("menu.tests.log_message"), KeyEvent.VK_S);
         addLogMessageItem.addActionListener((event) -> {
-            Logger.debug("Новая строка");
+            Logger.debug("log.message.new_line");
         });
 
-        JMenuItem showRobotCoordsItem = new JMenuItem("Показать координаты робота", KeyEvent.VK_R);
+        JMenuItem showRobotCoordsItem = new JMenuItem(LocalizationSupport.get("menu.tests.robot_coords"), KeyEvent.VK_R);
         showRobotCoordsItem.addActionListener((event) -> {
-            Logger.debug("X: " + robotModel.getRobotPositionX() +
-                    ", Y: " + robotModel.getRobotPositionY() +
-                    ", Направление: " + Math.toDegrees(robotModel.getRobotDirection()) + "°");
+            Logger.debug(robotModel.getCoordsLogEntry());
         });
 
         testMenu.add(addLogMessageItem);
-        testMenu.add(showRobotCoordsItem); // Добавляем новый пункт
+        testMenu.add(showRobotCoordsItem);
         return testMenu;
     }
 
     private JMenu createQuitMenu() {
-        JMenu menu = new JMenu("Выход");
+        JMenu menu = new JMenu(LocalizationSupport.get("menu.exit"));
         menu.setMnemonic(KeyEvent.VK_Q);
-        JMenuItem exitItem = new JMenuItem("Завершить работу", KeyEvent.VK_X);
+
+        JMenuItem exitItem = new JMenuItem(LocalizationSupport.get("menu.exit.quit"), KeyEvent.VK_X);
         exitItem.addActionListener(e -> frame.performExit());
         menu.add(exitItem);
         return menu;
+    }
+
+    private JMenu createLanguageMenu() {
+        JMenu langMenu = new JMenu(LocalizationSupport.get("menu.language"));
+
+        JMenuItem russian = new JMenuItem("Русский");
+        russian.addActionListener(e -> {
+            LocalizationSupport.setLocale(new Locale("ru"));
+            updateInterface();
+        });
+
+        JMenuItem english = new JMenuItem("English");
+        english.addActionListener(e -> {
+            LocalizationSupport.setLocale(new Locale("en"));
+            updateInterface();
+        });
+
+        langMenu.add(russian);
+        langMenu.add(english);
+        return langMenu;
+    }
+
+    private void updateInterface() {
+        frame.setJMenuBar(generateMenuBar());
+
+        for (JInternalFrame internalFrame : frame.getDesktopPane().getAllFrames()) {
+            if (internalFrame instanceof RobotCoordinatesWindow) {
+                ((RobotCoordinatesWindow) internalFrame).updateNames();
+            } else if (internalFrame instanceof GameWindow) {
+                internalFrame.setTitle(LocalizationSupport.get("window.title.game"));
+            } else if (internalFrame instanceof LogWindow) {
+                internalFrame.setTitle(LocalizationSupport.get("window.title.log"));
+                ((LogWindow) internalFrame).onLogChanged();
+            }
+        }
+
+        SwingUtilities.updateComponentTreeUI(frame);
     }
 }
