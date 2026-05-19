@@ -13,10 +13,20 @@ public class RobotCoordinatesWindow extends JInternalFrame implements PropertyCh
     private final JLabel directionLabel;
     private final DecimalFormat df = new DecimalFormat("#.##");
 
+    private JLabel titleLabel;
+    private JLabel xTitle;
+    private JLabel yTitle;
+    private JLabel dirTitle;
+
     public RobotCoordinatesWindow(RobotModel model) {
-        super("Координаты робота", true, true, true, true);
+        super(LocalizationSupport.get("window.title.coords"), true, true, true, true);
         m_model = model;
         m_model.addPropertyChangeListener(this);
+
+        titleLabel = new JLabel(LocalizationSupport.get("coords.main_title"));
+        xTitle = new JLabel(LocalizationSupport.get("coords.x"));
+        yTitle = new JLabel(LocalizationSupport.get("coords.y"));
+        dirTitle = new JLabel(LocalizationSupport.get("coords.direction"));
 
         setSize(250, 120);
         setLocation(320, 10);
@@ -30,12 +40,11 @@ public class RobotCoordinatesWindow extends JInternalFrame implements PropertyCh
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = new Insets(5, 5, 5, 5);
 
-        JLabel titleLabel = new JLabel("Текущие координаты робота:");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 12));
         mainPanel.add(titleLabel, gbc);
 
         gbc.gridy = 1;
-        mainPanel.add(new JLabel("X:"), gbc);
+        mainPanel.add(xTitle, gbc);
 
         gbc.gridx = 1;
         xCoordLabel = new JLabel(df.format(m_model.getRobotPositionX()));
@@ -44,7 +53,7 @@ public class RobotCoordinatesWindow extends JInternalFrame implements PropertyCh
 
         gbc.gridx = 0;
         gbc.gridy = 2;
-        mainPanel.add(new JLabel("Y:"), gbc);
+        mainPanel.add(yTitle, gbc);
 
         gbc.gridx = 1;
         yCoordLabel = new JLabel(df.format(m_model.getRobotPositionY()));
@@ -53,7 +62,7 @@ public class RobotCoordinatesWindow extends JInternalFrame implements PropertyCh
 
         gbc.gridx = 0;
         gbc.gridy = 3;
-        mainPanel.add(new JLabel("Направление:"), gbc);
+        mainPanel.add(dirTitle, gbc);
 
         gbc.gridx = 1;
         directionLabel = new JLabel(df.format(Math.toDegrees(m_model.getRobotDirection())) + "°");
@@ -61,6 +70,15 @@ public class RobotCoordinatesWindow extends JInternalFrame implements PropertyCh
         mainPanel.add(directionLabel, gbc);
 
         getContentPane().add(mainPanel);
+        pack();
+    }
+
+    public void updateNames() {
+        setTitle(LocalizationSupport.get("window.title.coords"));
+        titleLabel.setText(LocalizationSupport.get("coords.main_title"));
+        xTitle.setText(LocalizationSupport.get("coords.x"));
+        yTitle.setText(LocalizationSupport.get("coords.y"));
+        dirTitle.setText(LocalizationSupport.get("coords.direction"));
         pack();
     }
 

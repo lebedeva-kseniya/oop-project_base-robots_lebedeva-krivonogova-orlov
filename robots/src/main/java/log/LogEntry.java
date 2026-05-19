@@ -1,24 +1,25 @@
 package log;
 
-public class LogEntry
-{
-    private LogLevel m_logLevel;
-    private String m_strMessage;
-    
-    public LogEntry(LogLevel logLevel, String strMessage)
-    {
-        m_strMessage = strMessage;
-        m_logLevel = logLevel;
+public class LogEntry {
+    private final LogLevel level;
+    private final String key;
+    private final Object[] args;
+
+    public LogEntry(LogLevel level, String key, Object... args) {
+        this.level = level;
+        this.key = key;
+        this.args = args;
     }
-    
-    public String getMessage()
-    {
-        return m_strMessage;
+
+    public LogLevel getLevel() {
+        return level;
     }
-    
-    public LogLevel getLevel()
-    {
-        return m_logLevel;
+
+    public String getKey() {
+        return key;
+    }
+
+    public Object[] getArgs() {
+        return args;
     }
 }
-
