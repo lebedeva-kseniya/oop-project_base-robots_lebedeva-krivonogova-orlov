@@ -3,17 +3,15 @@ package gui;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.TextArea;
-
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
-
 import log.LogChangeListener;
 import log.LogEntry;
 import log.LogWindowSource;
 
 public class LogWindow extends JInternalFrame implements LogChangeListener {
-    private LogWindowSource m_logSource;
-    private TextArea m_logContent;
+    private final LogWindowSource m_logSource;
+    private final TextArea m_logContent;
 
     public LogWindow(LogWindowSource logSource) {
         super(LocalizationSupport.get("window.title.log"), true, true, true, true);
@@ -32,27 +30,9 @@ public class LogWindow extends JInternalFrame implements LogChangeListener {
     private void updateLogContent() {
         StringBuilder content = new StringBuilder();
         for (LogEntry entry : m_logSource.all()) {
-            String rawMessage = entry.getMessage();
-            String translated;
-
-            if (rawMessage.contains("|")) {
-                String[] parts = rawMessage.split("\\|");
-                String key = parts[0];
-
-                String pattern = LocalizationSupport.get(key);
-
-                if (!pattern.startsWith("!")) {
-                    Object[] args = new Object[parts.length - 1];
-                    System.arraycopy(parts, 1, args, 0, parts.length - 1);
-                    translated = java.text.MessageFormat.format(pattern, args);
-                } else {
-                    translated = rawMessage;
-                }
-            } else {
-                translated = LocalizationSupport.get(rawMessage);
-                if (translated.startsWith("!")) {
-                    translated = rawMessage;
-                }
+            String translated = LocalizationSupport.format(entry.getKey(), entry.getArgs());
+            if (translated.startsWith("!")) {
+                translated = entry.getKey();
             }
             content.append(translated).append("\n");
         }

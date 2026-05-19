@@ -9,7 +9,6 @@ import java.util.ResourceBundle;
 public class LocalizationSupport {
     private static final String BUNDLE_NAME = "messages";
     private static ResourceBundle resourceBundle;
-
     private static final Map<String, MessageFormat> mfCache = new HashMap<>();
 
     static {
@@ -41,7 +40,7 @@ public class LocalizationSupport {
     public static String formatWithMessageFormatCache(String pattern, Object... args) {
         MessageFormat mf = mfCache.get(pattern);
         if (mf == null) {
-            mf = new MessageFormat(pattern);
+            mf = new MessageFormat(pattern, Locale.US);
             mfCache.put(pattern, mf);
         }
         return mf.format(args);
